@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mentor–Mentee Monitoring System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top left, #5b8cff, #3a1c71 40%, #151320 75%, #020617 100%);
+            --card-bg: rgba(15, 23, 42, 0.92);
+            --accent: #7b5cff;
+            --accent-soft: rgba(123, 92, 255, 0.35);
+            --accent-strong: #c4a3ff;
+            --accent-alt: #ff6fae;
+            --heading-color: #e5e7eb;
+            --text-color: #cbd5f5;
+            --muted-text: #9ca3af;
+            --border-soft: rgba(148, 163, 184, 0.4);
+            --shadow-3d: 0 24px 60px rgba(15, 23, 42, 0.95);
+            --radius-xl: 24px;
+            --radius-pill: 999px;
+            --transition-fast: 0.2s ease-out;
+            --transition-med: 0.35s ease-out;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            padding: 24px;
+            overflow-x: hidden;
+            perspective: 1400px; /* Global depth */
+        }
+
+        /* 3D background grid + Dora-style floating orbs */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -2;
+            background-image:
+                linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.25;
+            transform: translateZ(-400px) scale(1.3);
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(50px);
+            opacity: 0.75;
+            z-index: -1;
+            pointer-events: none;
+            animation: floatOrb 22s infinite alternate ease-in-out;
+        }
+
+        .orb.orb-1 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(123, 92, 255, 0.95), transparent 70%);
+            top: -50px;
+            left: -60px;
+        }
+
+        .orb.orb-2 {
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.95), transparent 70%);
+            bottom: -70px;
+            right: 0;
+            animation-delay: 3s;
+        }
+
+        .orb.orb-3 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(244, 114, 182, 0.9), transparent 70%);
+            top: 40%;
+            right: 45%;
+            animation-delay: 6s;
+        }
+
+        @keyframes floatOrb {
+            from {
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+            to {
+                transform: translate3d(40px, -40px, 0) scale(1.12);
+            }
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1260px;
+            background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.12), transparent 55%),
+                        linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+            border-radius: 30px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: var(--shadow-3d);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            backdrop-filter: blur(26px);
+            transform-style: preserve-3d;
+        }
+
+        @media (max-width: 960px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            padding: 24px 20px;
+            border-right: 1px solid rgba(148, 163, 184, 0.25);
+            background:
+                radial-gradient(circle at top, rgba(123, 92, 255, 0.18), transparent 60%),
+                radial-gradient(circle at bottom, rgba(248, 113, 113, 0.24), transparent 60%),
+                rgba(15, 23, 42, 0.98);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dora-style decorative stripe */
+        .sidebar::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: conic-gradient(from 200deg, rgba(123, 92, 255, 0.15), rgba(56, 189, 248, 0.02), rgba(244, 114, 182, 0.18), transparent 40%);
+            opacity: 0.7;
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 18px;
+            background: conic-gradient(from 200deg, #7b5cff, #22d3ee, #ff6fae, #7b5cff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0b1020;
+            font-weight: 800;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.85);
+            transform: translateZ(0);
+            animation: logoPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.85);
+            }
+            50% {
+                transform: translateY(-2px) scale(1.04);
+                box-shadow: 0 18px 44px rgba(79, 70, 229, 0.9);
+            }
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-text span:first-child {
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #f9fafb;
+        }
+
+        .brand-text span:last-child {
+            font-size: 0.78rem;
+            color: var(--muted-text);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: var(--accent-strong);
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+            animation: floatTag 6s ease-in-out infinite alternate;
+        }
+
+        .tag-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.22);
+        }
+
+        @keyframes floatTag {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-3px);
+            }
+        }
+
+        .sidebar-nav {
+            margin: 14px 0 26px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--muted-text);
+            margin-bottom: 10px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 6px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            transition:
+                background var(--transition-fast),
+                transform 0.18s ease-out,
+                border 0.2s ease-out,
+                box-shadow 0.2s ease-out,
+                color 0.2s ease-out;
+        }
+
+        .nav-link span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link-icon {
+            font-size: 1.02rem;
+        }
+
+        .nav-link.active {
+            background: radial-gradient(circle at top left, rgba(123, 92, 255, 0.45), rgba(15, 23, 42, 0.95));
+            border-color: rgba(165, 180, 252, 0.9);
+            box-shadow: 0 14px 40px rgba(79, 70, 229, 0.6);
+            transform: translate3d(0, -2px, 12px);
+            color: #f9fafb;
+        }
+
+        .nav-link:hover:not(.active) {
+            background: rgba(15, 23, 42, 0.95);
+            border-color: rgba(148, 163, 184, 0.7);
+            transform: translateY(-1px);
+        }
+
+        .nav-pill {
+            font-size: 0.72rem;
+            padding: 2px 9px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--muted-text);
+        }
+
+        .sidebar-footnote {
+            font-size: 0.75rem;
+            color: var(--muted-text);
+            line-height: 1.5;
+            margin-top: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-footnote strong {
+            color: #e5e7eb;
+        }
+
+        /* Main content */
+        .main {
+            padding: 22px 26px 26px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* subtle gradient stripe like a Dora dashboard */
+        .main::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: -20%;
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.35), transparent 60%);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .main-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .breadcrumbs {
+            font-size: 0.78rem;
+            color: var(--muted-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breadcrumbs span {
+            opacity: 0.85;
+        }
+
+        .breadcrumbs-current {
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pill-badge {
+            font-size: 0.72rem;
+            padding: 5px 10px;
+            border-radius: var(--radius-pill);
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.5);
+        }
+
+        .primary-cta {
+            font-size: 0.82rem;
+            padding: 7px 14px;
+            border-radius: var(--radius-pill);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            background: linear-gradient(135deg, #7b5cff, #ff6fae);
+            color: #0b1020;
+            box-shadow: 0 14px 34px rgba(79, 70, 229, 0.8);
+            transform: translateZ(0);
+            transition:
+                transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                filter var(--transition-fast);
+        }
+
+        .primary-cta:hover {
+            transform: translate3d(0, -1px, 10px) scale(1.01);
+            filter: brightness(1.04);
+            box-shadow: 0 18px 44px rgba(79, 70, 229, 0.92);
+        }
+
+        .primary-cta:active {
+            transform: translateY(1px) scale(0.99);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.7);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 6px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--heading-color);
+        }
+
+        .section-subtitle {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+        }
+
+        /* Dora-style 3D card */
+        .card-3d {
+            background:
+                radial-gradient(circle at top left, rgba(123, 92, 255, 0.18), transparent 55%),
+                radial-gradient(circle at bottom right, rgba(248, 113, 113, 0.2), transparent 55%),
+                var(--card-bg);
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.95);
+            padding: 18px 18px 18px;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition:
+                transform var(--transition-med),
+                box-shadow var(--transition-med),
+                border-color var(--transition-med),
+                background 0.35s ease-out;
+        }
+
+        .card-3d::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: conic-gradient(from 210deg, rgba(123, 92, 255, 0.18), rgba(248, 113, 113, 0.18), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.45s ease-out;
+            pointer-events: none;
+        }
+
+        .card-3d:hover {
+            border-color: rgba(191, 219, 254, 0.9);
+            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.96);
+            background:
+                radial-gradient(circle at top left, rgba(123, 92, 255, 0.25), transparent 58%),
+                radial-gradient(circle at bottom right, rgba(248, 113, 113, 0.26), transparent 56%),
+                var(--card-bg);
+        }
+
+        .card-3d:hover::before {
+            opacity: 0.8;
+        }
+
+        .card-3d-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .pill-label {
+            font-size: 0.72rem;
+            padding: 4px 9px;
+            border-radius: var(--radius-pill);
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--muted-text);
+        }
+
+        /* Home section */
+        .grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        @media (min-width: 840px) {
+            .grid-2 {
+                grid-template-columns: 1.2fr 1fr;
+            }
+        }
+
+        .hero-heading {
+            font-size: 1.58rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .hero-highlight {
+            background: linear-gradient(120deg, #e5e7eb, #c4b5fd, #f9a8d4);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .hero-text {
+            font-size: 0.86rem;
+            color: var(--muted-text);
+            max-width: 510px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 14px 0;
+        }
+
+        .ghost-btn {
+            font-size: 0.8rem;
+            padding: 7px 13px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.9);
+            color: #e5e7eb;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition:
+                background 0.2s ease-out,
+                transform 0.18s ease-out,
+                border-color 0.2s ease-out;
+        }
+
+        .ghost-btn:hover {
+            background: rgba(15, 23, 42, 1);
+            border-color: rgba(191, 219, 254, 0.95);
+            transform: translateY(-1px);
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .metric-card {
+            padding: 10px 11px;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            background: rgba(15, 23, 42, 0.93);
+            font-size: 0.76rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.2), transparent 60%);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--accent-strong);
+        }
+
+        .metric-label {
+            font-size: 0.72rem;
+            color: var(--muted-text);
+        }
+
+        .mini-graph {
+            margin-top: 6px;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(123, 92, 255, 0.4), rgba(34, 211, 238, 0.7), rgba(244, 114, 182, 0.6));
+            border-radius: 999px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mini-graph::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(248, 250, 252, 0.65), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+
+        @keyframes shimmer {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Right home card – 3D graphic */
+        .progress-orbit {
+            margin-top: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 160px;
+        }
+
+        .progress-ring {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background:
+                conic-gradient(from 220deg, rgba(56, 189, 248, 0.7), rgba(244, 114, 182, 0.75), rgba(123, 92, 255, 0.9));
+            box-shadow:
+                0 18px 40px rgba(15, 23, 42, 0.96),
+                0 0 0 3px rgba(15, 23, 42, 0.95);
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(18deg) rotateY(-20deg);
+            animation: slowOrbit 12s linear infinite;
+        }
+
+        .progress-ring-inner {
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #e5e7eb;
+            font-size: 0.72rem;
+        }
+
+        .progress-ring-inner span:first-child {
+            font-size: 1.22rem;
+            font-weight: 600;
+            color: #bfdbfe;
+        }
+
+        .progress-orbit-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #f9fafb;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 18px rgba(248, 250, 252, 0.9);
+        }
+
+        @keyframes slowOrbit {
+            from { transform: rotateX(18deg) rotateY(-20deg) rotateZ(0deg); }
+            to   { transform: rotateX(18deg) rotateY(-20deg) rotateZ(360deg); }
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .chip {
+            font-size: 0.72rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+        }
+
+        /* Form and inputs – Dora-style 3D fields */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 10px 14px;
+            margin-top: 6px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+        }
+
+        .form-label {
+            font-size: 0.76rem;
+            color: var(--muted-text);
+        }
+
+        /* 3D field wrapper – this is where Dora-like animation happens */
+        .field-3d {
+            position: relative;
+            border-radius: 14px;
+            overflow: visible;
+            transform-style: preserve-3d;
+            transition:
+                transform var(--transition-med),
+                box-shadow var(--transition-med),
+                border-color var(--transition-med),
+                background 0.35s ease-out;
+        }
+
+        .field-3d::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.18), transparent 70%);
+            opacity: 0.6;
+            pointer-events: none;
+            transition: border-color 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        .input-3d,
+        .select-3d,
+        .textarea-3d {
+            width: 100%;
+            padding: 9px 11px;
+            border-radius: 12px;
+            border: none;
+            background:
+                radial-gradient(circle at top left, rgba(148, 163, 184, 0.1), transparent 75%),
+                rgba(15, 23, 42, 0.98);
+            color: #e5e7eb;
+            font-size: 0.8rem;
+            outline: none;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.85);
+            transform: translateZ(0);
+        }
+
+        .input-3d::placeholder,
+        .textarea-3d::placeholder {
+            color: rgba(148, 163, 184, 0.75);
+        }
+
+        /* Focus-within triggers the Dora-style 3D pop and glow */
+        .field-3d:focus-within {
+            transform: translate3d(0, -2px, 16px) rotateX(3deg);
+            box-shadow:
+                0 16px 44px rgba(15, 23, 42, 0.99),
+                0 0 0 1px rgba(129, 140, 248, 0.9),
+                0 0 26px rgba(129, 140, 248, 0.75);
+        }
+
+        .field-3d:focus-within::before {
+            border-color: rgba(191, 219, 254, 0.98);
+            opacity: 1;
+        }
+
+        .textarea-3d {
+            min-height: 64px;
+            resize: vertical;
+        }
+
+        .form-footer {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .note {
+            font-size: 0.74rem;
+            color: var(--muted-text);
+        }
+
+        .note strong {
+            color: var(--accent-strong);
+        }
+
+        .btn-secondary {
+            font-size: 0.8rem;
+            padding: 7px 13px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.96);
+            color: #e5e7eb;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition:
+                background 0.2s ease-out,
+                transform 0.18s ease-out,
+                border-color 0.2s ease-out;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(15, 23, 42, 1);
+            border-color: rgba(191, 219, 254, 0.95);
+            transform: translateY(-1px);
+        }
+
+        /* Table (View Records) */
+        .table-wrapper {
+            margin-top: 12px;
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.98);
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+
+        .records-table thead {
+            background: linear-gradient(90deg, rgba(15, 23, 42, 1), rgba(55, 48, 163, 0.95));
+        }
+
+        .records-table th,
+        .records-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.85);
+        }
+
+        .records-table th {
+            font-weight: 500;
+            color: #e5e7eb;
+            white-space: nowrap;
+        }
+
+        .records-table tbody tr:nth-child(even) {
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .records-table tbody tr:hover {
+            background: rgba(30, 64, 175, 0.75);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(52, 211, 153, 0.8);
+            color: #bbf7d0;
+            background: rgba(22, 101, 52, 0.6);
+        }
+
+        .status-pill.pending {
+            border-color: rgba(234, 179, 8, 0.9);
+            background: rgba(120, 53, 15, 0.7);
+            color: #fef9c3;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: currentColor;
+        }
+
+        /* About info list */
+        .info-list {
+            margin: 10px 0 4px;
+            padding-left: 16px;
+            font-size: 0.8rem;
+            color: var(--muted-text);
+        }
+
+        .info-list li {
+            margin-bottom: 4px;
+        }
+
+        /* Dora-style avatar badge on About */
+        .avatar-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 11px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.95);
+            font-size: 0.78rem;
+            margin-bottom: 8px;
+        }
+
+        .avatar-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: conic-gradient(from 210deg, #7b5cff, #22d3ee, #ff6fae, #7b5cff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #0b1020;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            background: rgba(15, 23, 42, 0.97);
+            border: 1px solid rgba(52, 211, 153, 0.85);
+            color: #bbf7d0;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95);
+            opacity: 0;
+            pointer-events: none;
+            transition:
+                transform 0.25s ease-out,
+                opacity 0.25s ease-out;
+            z-index: 50;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .toast-icon {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background grid + orbs (UI graphics) -->
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="app-shell">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar" data-tilt-card>
+            <div class="brand">
+                <div class="brand-logo">MM</div>
+                <div class="brand-text">
+                    <span>MentorTrack</span>
+                    <span>Mentor–Mentee Monitoring System</span>
+                </div>
+            </div>
+
+            <div class="tag">
+                <span class="tag-dot"></span>
+                <span>Term monitoring · Live</span>
+            </div>
+
+            <div class="sidebar-nav">
+                <div class="nav-label">Navigation</div>
+                <ul class="nav-list">
+                    <li>
+                        <button class="nav-link active" data-section="home">
+                            <span>
+                                <span class="nav-link-icon">🏠</span>
+                                <span>Home</span>
+                            </span>
+                            <span class="nav-pill">Overview</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-link" data-section="add-note">
+                            <span>
+                                <span class="nav-link-icon">📝</span>
+                                <span>Add Mentee Note</span>
+                            </span>
+                            <span class="nav-pill">New entry</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-link" data-section="records">
+                            <span>
+                                <span class="nav-link-icon">📋</span>
+                                <span>View Mentee Records</span>
+                            </span>
+                            <span class="nav-pill">History</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-link" data-section="about">
+                            <span>
+                                <span class="nav-link-icon">ℹ️</span>
+                                <span>About</span>
+                            </span>
+                            <span class="nav-pill">System info</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footnote">
+                <strong>Tip:</strong> Use this system to track each mentee’s progress, meeting notes,
+                and follow-up actions in one place with a modern 3D interface.
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <header class="main-header">
+                <div class="breadcrumbs" id="breadcrumbs">
+                    <span>Home</span>
+                    <span>→</span>
+                    <span class="breadcrumbs-current">Dashboard</span>
+                </div>
+                <div class="header-actions">
+                    <div class="pill-badge">Academic Year 2024–25</div>
+                    <button class="primary-cta" data-section="add-note">
+                        + Add Mentee Note
+                    </button>
+                </div>
+            </header>
+
+            <!-- HOME SECTION -->
+            <section class="section active" id="home" data-tilt-card>
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Mentor–Mentee Monitoring System</div>
+                        <div class="section-subtitle">
+                            Centralised platform to capture mentor–mentee interactions, goals, and follow-up actions.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <!-- Left: Hero & metrics -->
+                    <div class="card-3d" data-tilt-card>
+                        <div class="card-3d-header">
+                            <div>
+                                <div class="hero-heading">
+                                    Track every <span class="hero-highlight">session, goal, and outcome</span>.
+                                </div>
+                                <p class="hero-text">
+                                    Use this system to record meeting notes, monitor academic and personal growth,
+                                    and keep a clear history of mentor–mentee interactions across the semester.
+                                </p>
+                            </div>
+                            <span class="pill-label">Dashboard · Real-time</span>
+                        </div>
+
+                        <div class="hero-buttons">
+                            <button class="primary-cta" data-section="add-note">
+                                Start New Session
+                            </button>
+                            <button class="ghost-btn" data-section="records">
+                                <span>View Past Records</span>
+                                <span>↗</span>
+                            </button>
+                        </div>
+
+                        <div class="metrics">
+                            <div class="metric-card">
+                                <div class="metric-value">32</div>
+                                <div class="metric-label">Active mentees</div>
+                                <div class="mini-graph"></div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">124</div>
+                                <div class="metric-label">Sessions logged</div>
+                                <div class="mini-graph"></div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">91%</div>
+                                <div class="metric-label">Action items completed</div>
+                                <div class="mini-graph"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Dora-style 3D progress graphic -->
+                    <div class="card-3d" data-tilt-card>
+                        <div class="card-3d-header">
+                            <div class="section-subtitle">
+                                Visual summary
+                            </div>
+                            <span class="pill-label">3D Monitoring Graphic</span>
+                        </div>
+
+                        <p class="section-subtitle">
+                            This animated “progress orbit” shows how structured notes, follow-ups and feedback
+                            loops keep each mentee aligned with the mentoring plan.
+                        </p>
+
+                        <div class="progress-orbit">
+                            <div class="progress-ring">
+                                <div class="progress-ring-inner">
+                                    <span>87%</span>
+                                    <span>Mentoring coverage</span>
+                                </div>
+                                <div class="progress-orbit-dot"></div>
+                            </div>
+                        </div>
+
+                        <div class="chip-row">
+                            <span class="chip">Session notes</span>
+                            <span class="chip">Action plans</span>
+                            <span class="chip">Follow-up dates</span>
+                            <span class="chip">Risk alerts</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADD MENTEE NOTE SECTION -->
+            <section class="section" id="add-note" data-tilt-card>
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Add Mentee Note</div>
+                        <div class="section-subtitle">
+                            Capture key points from today’s mentoring session, including goals and follow-up actions.
+                        </div>
+                    </div>
+                    <span class="pill-label">New Mentee Session</span>
+                </div>
+
+                <div class="card-3d" data-tilt-card>
+                    <form id="menteeForm">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label class="form-label" for="menteeName">Mentee Name</label>
+                                <div class="field-3d">
+                                    <input class="input-3d" id="menteeName" type="text" placeholder="e.g. Ananya Rao" required />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="menteeId">Mentee ID / Roll No.</label>
+                                <div class="field-3d">
+                                    <input class="input-3d" id="menteeId" type="text" placeholder="e.g. CSE23-017" required />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="program">Program / Department</label>
+                                <div class="field-3d">
+                                    <input class="input-3d" id="program" type="text" placeholder="e.g. B.Tech – CSE" />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="semester">Semester</label>
+                                <div class="field-3d">
+                                    <select class="select-3d" id="semester">
+                                        <option value="">Select semester</option>
+                                        <option>1st</option>
+                                        <option>2nd</option>
+                                        <option>3rd</option>
+                                        <option>4th</option>
+                                        <option>5th</option>
+                                        <option>6th</option>
+                                        <option>7th</option>
+                                        <option>8th</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="mentorName">Mentor Name</label>
+                                <div class="field-3d">
+                                    <input class="input-3d" id="mentorName" type="text" placeholder="e.g. Prof. K. Ramesh" />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="sessionDate">Session Date</label>
+                                <div class="field-3d">
+                                    <input class="input-3d" id="sessionDate" type="date" />
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="sessionType">Session Type</label>
+                                <div class="field-3d">
+                                    <select class="select-3d" id="sessionType">
+                                        <option value="">Select type</option>
+                                        <option>Academic review</option>
+                                        <option>Personal counselling</option>
+                                        <option>Career guidance</option>
+                                        <option>Parent interaction</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="status">Status</label>
+                                <div class="field-3d">
+                                    <select class="select-3d" id="status">
+                                        <option value="On Track">On Track</option>
+                                        <option value="Needs Attention">Needs Attention</option>
+                                        <option value="Critical">Critical</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-field">
+                                <label class="form-label" for="strengths">Strengths / Positive Observations</label>
+                                <div class="field-3d">
+                                    <textarea class="textarea-3d" id="strengths" placeholder="e.g. Good attendance, active in discussions"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="concerns">Concerns / Areas to Improve</label>
+                                <div class="field-3d">
+                                    <textarea class="textarea-3d" id="concerns" placeholder="e.g. Needs to improve in mathematics, low confidence in presentations"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-field">
+                                <label class="form-label" for="actionPlan">Action Plan / Mentor Suggestions</label>
+                                <div class="field-3d">
+                                    <textarea class="textarea-3d" id="actionPlan" placeholder="e.g. Weekly doubt-clearing sessions, presentation practice every Friday"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label class="form-label" for="followUpDate">Next Follow-Up Date</label>
+                                <div class="field-3d">
+                                    <input class="input-3d" id="followUpDate" type="date" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-footer">
+                            <p class="note">
+                                <strong>Note:</strong> These details are part of the official Mentor–Mentee monitoring record.
+                                Ensure information is clear, objective and professional.
+                            </p>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button type="button" class="btn-secondary" id="resetForm">
+                                    Reset
+                                </button>
+                                <button type="submit" class="primary-cta">
+                                    Save Mentee Note
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- VIEW RECORDS SECTION -->
+            <section class="section" id="records" data-tilt-card>
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">View Mentee Records</div>
+                        <div class="section-subtitle">
+                            Browse previously recorded mentor–mentee sessions. New entries from this browser will also appear here.
+                        </div>
+                    </div>
+                    <span class="pill-label">History & Tracking</span>
+                </div>
+
+                <div class="card-3d" data-tilt-card>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label" for="searchText">Quick Search</label>
+                            <div class="field-3d">
+                                <input id="searchText" class="input-3d" type="text" placeholder="Filter by mentee name, ID, mentor..." />
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="filterStatus">Status Filter</label>
+                            <div class="field-3d">
+                                <select id="filterStatus" class="select-3d">
+                                    <option value="">All statuses</option>
+                                    <option value="On Track">On Track</option>
+                                    <option value="Needs Attention">Needs Attention</option>
+                                    <option value="Critical">Critical</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="records-table" id="recordsTable">
+                            <thead>
+                                <tr>
+                                    <th>Mentee</th>
+                                    <th>ID</th>
+                                    <th>Program</th>
+                                    <th>Semester</th>
+                                    <th>Mentor</th>
+                                    <th>Session Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Sample rows -->
+                                <tr>
+                                    <td>Ananya Rao</td>
+                                    <td>CSE23-017</td>
+                                    <td>B.Tech – CSE</td>
+                                    <td>3rd</td>
+                                    <td>Prof. K. Ramesh</td>
+                                    <td>2024-10-18</td>
+                                    <td>
+                                        <span class="status-pill">
+                                            <span class="status-dot"></span> On Track
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Rohit Kumar</td>
+                                    <td>ECE22-041</td>
+                                    <td>B.Tech – ECE</td>
+                                    <td>5th</td>
+                                    <td>Dr. S. Meena</td>
+                                    <td>2024-10-20</td>
+                                    <td>
+                                        <span class="status-pill pending">
+                                            <span class="status-dot"></span> Needs Attention
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="note" style="margin-top:10px;">
+                        <strong>Privacy:</strong> These details are confidential and should be accessed only by authorized mentors,
+                        coordinators and administrators.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ABOUT SECTION -->
+            <section class="section" id="about" data-tilt-card>
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">About Mentor–Mentee Monitoring System</div>
+                        <div class="section-subtitle">
+                            Designed to provide a structured, digital record of mentor–mentee interactions within an institution.
+                        </div>
+                    </div>
+                    <span class="pill-label">System Overview</span>
+                </div>
+
+                <div class="grid">
+                    <div class="card-3d" data-tilt-card>
+                        <div class="avatar-badge">
+                            <div class="avatar-circle"></div>
+                            <span>Mentor–Mentee Monitoring System</span>
+                        </div>
+
+                        <h4 class="section-title" style="font-size:1rem;">Purpose of the System</h4>
+                        <ul class="info-list">
+                            <li>Document each mentoring session in a clear and standardized format.</li>
+                            <li>Track academic, behavioural and personal development of each mentee.</li>
+                            <li>Support departmental and institutional reporting for quality assurance and accreditation.</li>
+                            <li>Improve communication between mentors, mentees and parents (where applicable).</li>
+                        </ul>
+
+                        <h4 class="section-title" style="font-size:1rem; margin-top:8px;">Key Features</h4>
+                        <ul class="info-list">
+                            <li>Professional note-taking interface with 3D-styled, focus-driven input fields.</li>
+                            <li>Centralized history of meetings, action items and follow-up dates.</li>
+                            <li>Flexible filters for status, mentee, mentor, semester etc. (frontend demo here).</li>
+                            <li>Modern visual design inspired by AI dashboards and Dora-style micro-interactions.</li>
+                        </ul>
+
+                        <div class="chip-row">
+                            <span class="chip">Mentoring compliance</span>
+                            <span class="chip">Outcome-based education</span>
+                            <span class="chip">Continuous monitoring</span>
+                        </div>
+                    </div>
+
+                    <div class="card-3d" data-tilt-card>
+                        <h4 class="section-title" style="font-size:1rem;">Typical Users</h4>
+                        <ul class="info-list">
+                            <li><strong>Mentors:</strong> Faculty members recording session notes and follow-ups.</li>
+                            <li><strong>Mentees:</strong> Students whose progress is being monitored.</li>
+                            <li><strong>Coordinators / HoD:</strong> Review consolidated reports periodically.</li>
+                            <li><strong>Management / IQAC:</strong> Use data for quality and accreditation reports.</li>
+                        </ul>
+
+                        <h4 class="section-title" style="font-size:1rem; margin-top:8px;">How this UI can be extended</h4>
+                        <ul class="info-list">
+                            <li>Connect the “Add Mentee Note” form to a backend (PHP/Node/Java etc.) and database (MySQL/MongoDB).</li>
+                            <li>Convert the history table into a paginated grid with export-to-Excel/PDF options.</li>
+                            <li>Integrate login-based access and role-wise dashboards.</li>
+                            <li>Add analytics charts (CGPA trend, attendance trend, risk alerts) on the Home page.</li>
+                        </ul>
+
+                        <p class="section-subtitle" style="margin-top:6px;">
+                            This front-end prototype focuses on professional layout, strong CSS styling and 3D animations on
+                            interactive fields, suitable for academic project demonstrations or real institutional deployment
+                            after backend integration.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">✅</span>
+        <span>Mentee note saved to table (front-end demo).</span>
+    </div>
+
+    <script>
+        // Navigation handling
+        const navLinks = document.querySelectorAll(".nav-link");
+        const sections = document.querySelectorAll(".section");
+        const breadcrumbs = document.getElementById("breadcrumbs");
+        const primaryCtas = document.querySelectorAll("[data-section]");
+
+        function showSection(id) {
+            sections.forEach(sec => {
+                sec.classList.toggle("active", sec.id === id);
+            });
+
+            navLinks.forEach(link => {
+                link.classList.toggle("active", link.getAttribute("data-section") === id);
+            });
+
+            let label = "Dashboard";
+            if (id === "add-note") label = "Add Mentee Note";
+            if (id === "records") label = "View Mentee Records";
+            if (id === "about") label = "About System";
+
+            breadcrumbs.innerHTML = `
+                <span>Home</span>
+                <span>→</span>
+                <span class="breadcrumbs-current">${label}</span>
+            `;
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener("click", () => {
+                const id = link.getAttribute("data-section");
+                showSection(id);
+            });
+        });
+
+        primaryCtas.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const id = btn.getAttribute("data-section");
+                if (id) showSection(id);
+            });
+        });
+
+        // Toast helper
+        const toast = document.getElementById("toast");
+        let toastTimeout;
+
+        function showToast() {
+            toast.classList.add("show");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2600);
+        }
+
+        // Form handling – add row to table
+        const menteeForm = document.getElementById("menteeForm");
+        const recordsTableBody = document.querySelector("#recordsTable tbody");
+        const resetFormBtn = document.getElementById("resetForm");
+
+        menteeForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const menteeName = document.getElementById("menteeName").value.trim();
+            const menteeId = document.getElementById("menteeId").value.trim();
+            const program = document.getElementById("program").value.trim();
+            const semester = document.getElementById("semester").value.trim();
+            const mentorName = document.getElementById("mentorName").value.trim();
+            const sessionDate = document.getElementById("sessionDate").value;
+            const status = document.getElementById("status").value || "On Track";
+
+            if (!menteeName || !menteeId) {
+                alert("Please enter at least Mentee Name and ID.");
+                return;
+            }
+
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${menteeName}</td>
+                <td>${menteeId}</td>
+                <td>${program || "-"}</td>
+                <td>${semester || "-"}</td>
+                <td>${mentorName || "-"}</td>
+                <td>${sessionDate || "-"}</td>
+                <td>
+                    <span class="status-pill ${status === "Needs Attention" || status === "Critical" ? "pending" : ""}">
+                        <span class="status-dot"></span> ${status}
+                    </span>
+                </td>
+            `;
+
+            recordsTableBody.prepend(tr);
+            menteeForm.reset();
+            showToast();
+            showSection("records");
+        });
+
+        resetFormBtn.addEventListener("click", () => {
+            menteeForm.reset();
+        });
+
+        // Simple search filter
+        const searchText = document.getElementById("searchText");
+        const filterStatus = document.getElementById("filterStatus");
+
+        function filterTable() {
+            const text = (searchText.value || "").toLowerCase();
+            const statusFilter = filterStatus.value;
+            const rows = recordsTableBody.querySelectorAll("tr");
+
+            rows.forEach(row => {
+                const cellsText = row.innerText.toLowerCase();
+                const statusText = row.querySelector(".status-pill")?.innerText || "";
+                const matchesText = cellsText.includes(text);
+                const matchesStatus = !statusFilter || statusText.includes(statusFilter);
+                row.style.display = (matchesText && matchesStatus) ? "" : "none";
+            });
+        }
+
+        searchText.addEventListener("input", filterTable);
+        filterStatus.addEventListener("change", filterTable);
+
+        // Dora-style subtle 3D tilt on cards (no heavy library)
+        const tiltCards = document.querySelectorAll("[data-tilt-card]");
+
+        tiltCards.forEach(card => {
+            card.addEventListener("mousemove", (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = ((y - centerY) / centerY) * 4; // max 4deg
+                const rotateY = ((x - centerX) / centerX) * -4;
+
+                card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`;
+            });
+
+            card.addEventListener("mouseleave", () => {
+                card.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0)";
+            });
+        });
+    </script>
+</body>
+</html>
