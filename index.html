@@ -33,19 +33,20 @@
 
         body {
             margin: 0;
+            padding: 24px;
             font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: var(--bg-gradient);
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: stretch;
-            padding: 24px;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
             overflow-x: hidden;
-            perspective: 1400px; /* Global depth */
+            perspective: 1400px;
         }
 
-        /* 3D background grid + Dora-style floating orbs */
+        /* 3D background grid + orbs */
         .bg-grid {
             position: fixed;
             inset: 0;
@@ -104,6 +105,46 @@
             }
         }
 
+        /* TOP HEADER (big font) */
+        .top-header {
+            width: 100%;
+            max-width: 1260px;
+            margin-bottom: 16px;
+            padding: 16px 28px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            background:
+                radial-gradient(circle at top left, rgba(123, 92, 255, 0.26), transparent 60%),
+                radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.22), transparent 60%),
+                rgba(15, 23, 42, 0.96);
+            box-shadow: 0 22px 52px rgba(15, 23, 42, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .top-header::before {
+            content: "";
+            position: absolute;
+            inset: -30%;
+            background: linear-gradient(120deg, rgba(248, 250, 252, 0.18), transparent, rgba(248, 250, 252, 0.08));
+            opacity: 0.7;
+            mix-blend-mode: screen;
+        }
+
+        .top-header span {
+            position: relative;
+            z-index: 1;
+        }
+
         .app-shell {
             width: 100%;
             max-width: 1260px;
@@ -137,7 +178,6 @@
             overflow: hidden;
         }
 
-        /* Dora-style decorative stripe */
         .sidebar::before {
             content: "";
             position: absolute;
@@ -320,14 +360,13 @@
             color: #e5e7eb;
         }
 
-        /* Main content */
+        /* Main */
         .main {
             padding: 22px 26px 26px;
             position: relative;
             overflow: hidden;
         }
 
-        /* subtle gradient stripe like a Dora dashboard */
         .main::before {
             content: "";
             position: absolute;
@@ -448,7 +487,7 @@
             color: var(--muted-text);
         }
 
-        /* Dora-style 3D card */
+        /* 3D card */
         .card-3d {
             background:
                 radial-gradient(circle at top left, rgba(123, 92, 255, 0.18), transparent 55%),
@@ -457,7 +496,7 @@
             border-radius: var(--radius-xl);
             border: 1px solid rgba(148, 163, 184, 0.4);
             box-shadow: 0 18px 40px rgba(15, 23, 42, 0.95);
-            padding: 18px 18px 18px;
+            padding: 18px;
             position: relative;
             overflow: hidden;
             transform-style: preserve-3d;
@@ -508,7 +547,6 @@
             color: var(--muted-text);
         }
 
-        /* Home section */
         .grid {
             display: grid;
             gap: 14px;
@@ -516,6 +554,10 @@
 
         @media (min-width: 840px) {
             .grid-2 {
+                grid-template-columns: 1.2fr 1fr;
+            }
+
+            .records-layout {
                 grid-template-columns: 1.2fr 1fr;
             }
         }
@@ -632,7 +674,6 @@
             }
         }
 
-        /* Right home card – 3D graphic */
         .progress-orbit {
             margin-top: 4px;
             display: flex;
@@ -707,7 +748,6 @@
             border: 1px solid rgba(148, 163, 184, 0.7);
         }
 
-        /* Form and inputs – Dora-style 3D fields */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -727,7 +767,6 @@
             color: var(--muted-text);
         }
 
-        /* 3D field wrapper – this is where Dora-like animation happens */
         .field-3d {
             position: relative;
             border-radius: 14px;
@@ -774,7 +813,6 @@
             color: rgba(148, 163, 184, 0.75);
         }
 
-        /* Focus-within triggers the Dora-style 3D pop and glow */
         .field-3d:focus-within {
             transform: translate3d(0, -2px, 16px) rotateX(3deg);
             box-shadow:
@@ -834,7 +872,6 @@
             transform: translateY(-1px);
         }
 
-        /* Table (View Records) */
         .table-wrapper {
             margin-top: 12px;
             border-radius: 18px;
@@ -899,7 +936,6 @@
             background: currentColor;
         }
 
-        /* About info list */
         .info-list {
             margin: 10px 0 4px;
             padding-left: 16px;
@@ -911,7 +947,6 @@
             margin-bottom: 4px;
         }
 
-        /* Dora-style avatar badge on About */
         .avatar-badge {
             display: inline-flex;
             align-items: center;
@@ -936,7 +971,6 @@
             color: #0b1020;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 18px;
@@ -969,17 +1003,154 @@
         .toast-icon {
             font-size: 1rem;
         }
+
+        /* RECORDS + REPORT LAYOUT */
+        .records-layout {
+            display: grid;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .report-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .report-heading {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .report-intro {
+            font-size: 0.75rem;
+            color: var(--muted-text);
+        }
+
+        .report-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .report-card {
+            padding: 12px 14px;
+        }
+
+        .report-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .report-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--heading-color);
+        }
+
+        .report-id {
+            font-size: 0.72rem;
+            color: var(--muted-text);
+        }
+
+        .report-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 4px 12px;
+            margin-bottom: 8px;
+            margin-top: 4px;
+        }
+
+        .report-field {
+            font-size: 0.75rem;
+            color: var(--muted-text);
+        }
+
+        .report-field-label {
+            font-weight: 600;
+            color: var(--heading-color);
+            display: block;
+        }
+
+        .report-section-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-top: 6px;
+            margin-bottom: 2px;
+        }
+
+        .report-text {
+            font-size: 0.74rem;
+            color: var(--muted-text);
+            line-height: 1.5;
+        }
+
+        /* FOOTER */
+        .app-footer {
+            width: 100%;
+            max-width: 1260px;
+            margin-top: 14px;
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            background:
+                radial-gradient(circle at top left, rgba(123, 92, 255, 0.18), transparent 60%),
+                radial-gradient(circle at bottom right, rgba(244, 114, 182, 0.18), transparent 60%),
+                rgba(15, 23, 42, 0.96);
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.95);
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--muted-text);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-footer::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: linear-gradient(120deg, rgba(248, 250, 252, 0.1), transparent, rgba(248, 250, 252, 0.05));
+            opacity: 0.7;
+            mix-blend-mode: screen;
+        }
+
+        .app-footer span {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 840px) {
+            .records-layout {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Background grid + orbs (UI graphics) -->
+    <!-- Background graphics -->
     <div class="bg-grid"></div>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
+    <!-- Header -->
+    <div class="top-header" data-tilt-card>
+        <span>VFSTR - DEPARTMENT OF COMPUTER APPLICATION</span>
+    </div>
+
+    <!-- App Shell -->
     <div class="app-shell">
-        <!-- Sidebar / Navigation -->
+        <!-- Sidebar -->
         <aside class="sidebar" data-tilt-card>
             <div class="brand">
                 <div class="brand-logo">MM</div>
@@ -1070,7 +1241,7 @@
                 </div>
 
                 <div class="grid grid-2">
-                    <!-- Left: Hero & metrics -->
+                    <!-- Left -->
                     <div class="card-3d" data-tilt-card>
                         <div class="card-3d-header">
                             <div>
@@ -1114,7 +1285,7 @@
                         </div>
                     </div>
 
-                    <!-- Right: Dora-style 3D progress graphic -->
+                    <!-- Right -->
                     <div class="card-3d" data-tilt-card>
                         <div class="card-3d-header">
                             <div class="section-subtitle">
@@ -1148,7 +1319,7 @@
                 </div>
             </section>
 
-            <!-- ADD MENTEE NOTE SECTION -->
+            <!-- ADD NOTE SECTION -->
             <section class="section" id="add-note" data-tilt-card>
                 <div class="section-header">
                     <div>
@@ -1290,7 +1461,7 @@
                 </div>
             </section>
 
-            <!-- VIEW RECORDS SECTION -->
+            <!-- RECORDS SECTION -->
             <section class="section" id="records" data-tilt-card>
                 <div class="section-header">
                     <div>
@@ -1303,6 +1474,7 @@
                 </div>
 
                 <div class="card-3d" data-tilt-card>
+                    <!-- Filters row -->
                     <div class="form-grid">
                         <div class="form-field">
                             <label class="form-label" for="searchText">Quick Search</label>
@@ -1323,55 +1495,75 @@
                         </div>
                     </div>
 
-                    <div class="table-wrapper">
-                        <table class="records-table" id="recordsTable">
-                            <thead>
-                                <tr>
-                                    <th>Mentee</th>
-                                    <th>ID</th>
-                                    <th>Program</th>
-                                    <th>Semester</th>
-                                    <th>Mentor</th>
-                                    <th>Session Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Sample rows -->
-                                <tr>
-                                    <td>Ananya Rao</td>
-                                    <td>CSE23-017</td>
-                                    <td>B.Tech – CSE</td>
-                                    <td>3rd</td>
-                                    <td>Prof. K. Ramesh</td>
-                                    <td>2024-10-18</td>
-                                    <td>
-                                        <span class="status-pill">
-                                            <span class="status-dot"></span> On Track
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Rohit Kumar</td>
-                                    <td>ECE22-041</td>
-                                    <td>B.Tech – ECE</td>
-                                    <td>5th</td>
-                                    <td>Dr. S. Meena</td>
-                                    <td>2024-10-20</td>
-                                    <td>
-                                        <span class="status-pill pending">
-                                            <span class="status-dot"></span> Needs Attention
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- REPORT heading text -->
+                    <div style="margin-top:10px;">
+                        <span class="report-heading">Report</span>
                     </div>
 
-                    <p class="note" style="margin-top:10px;">
-                        <strong>Privacy:</strong> These details are confidential and should be accessed only by authorized mentors,
-                        coordinators and administrators.
-                    </p>
+                    <!-- Layout: table + report -->
+                    <div class="records-layout">
+                        <!-- Table side -->
+                        <div>
+                            <div class="table-wrapper">
+                                <table class="records-table" id="recordsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Mentee</th>
+                                            <th>ID</th>
+                                            <th>Program</th>
+                                            <th>Semester</th>
+                                            <th>Mentor</th>
+                                            <th>Session Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Ananya Rao</td>
+                                            <td>CSE23-017</td>
+                                            <td>B.Tech – CSE</td>
+                                            <td>3rd</td>
+                                            <td>Prof. K. Ramesh</td>
+                                            <td>2024-10-18</td>
+                                            <td>
+                                                <span class="status-pill">
+                                                    <span class="status-dot"></span> On Track
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rohit Kumar</td>
+                                            <td>ECE22-041</td>
+                                            <td>B.Tech – ECE</td>
+                                            <td>5th</td>
+                                            <td>Dr. S. Meena</td>
+                                            <td>2024-10-20</td>
+                                            <td>
+                                                <span class="status-pill pending">
+                                                    <span class="status-dot"></span> Needs Attention
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p class="note" style="margin-top:10px;">
+                                <strong>Privacy:</strong> These details are confidential and should be accessed only by authorized mentors,
+                                coordinators and administrators.
+                            </p>
+                        </div>
+
+                        <!-- Report side -->
+                        <div class="report-panel">
+                            <p class="report-intro">
+                                Each time you add a mentee note, a detailed report is generated here with all fields from the form.
+                            </p>
+                            <div id="reportContainer" class="report-container">
+                                <!-- Dynamic report cards will appear here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1445,10 +1637,15 @@
         </main>
     </div>
 
+    <!-- Footer -->
+    <div class="app-footer" data-tilt-card>
+        <span>desingned by -chandana,sudheer,arun sai,rohith</span>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast">
         <span class="toast-icon">✅</span>
-        <span>Mentee note saved to table (front-end demo).</span>
+        <span>Mentee note saved (table + report updated).</span>
     </div>
 
     <script>
@@ -1464,7 +1661,10 @@
             });
 
             navLinks.forEach(link => {
-                link.classList.toggle("active", link.getAttribute("data-section") === id);
+                link.classList.toggle(
+                    "active",
+                    link.getAttribute("data-section") === id
+                );
             });
 
             let label = "Dashboard";
@@ -1505,10 +1705,11 @@
             }, 2600);
         }
 
-        // Form handling – add row to table
+        // Form handling – add row to table + report card
         const menteeForm = document.getElementById("menteeForm");
         const recordsTableBody = document.querySelector("#recordsTable tbody");
         const resetFormBtn = document.getElementById("resetForm");
+        const reportContainer = document.getElementById("reportContainer");
 
         menteeForm.addEventListener("submit", (e) => {
             e.preventDefault();
@@ -1519,15 +1720,20 @@
             const semester = document.getElementById("semester").value.trim();
             const mentorName = document.getElementById("mentorName").value.trim();
             const sessionDate = document.getElementById("sessionDate").value;
+            const sessionType = document.getElementById("sessionType").value || "-";
             const status = document.getElementById("status").value || "On Track";
+            const strengths = document.getElementById("strengths").value.trim();
+            const concerns = document.getElementById("concerns").value.trim();
+            const actionPlan = document.getElementById("actionPlan").value.trim();
+            const followUpDate = document.getElementById("followUpDate").value;
 
             if (!menteeName || !menteeId) {
                 alert("Please enter at least Mentee Name and ID.");
                 return;
             }
 
+            // 1) Add to table
             const tr = document.createElement("tr");
-
             tr.innerHTML = `
                 <td>${menteeName}</td>
                 <td>${menteeId}</td>
@@ -1541,8 +1747,25 @@
                     </span>
                 </td>
             `;
-
             recordsTableBody.prepend(tr);
+
+            // 2) Add report card (all fields as report)
+            const entry = {
+                menteeName,
+                menteeId,
+                program,
+                semester,
+                mentorName,
+                sessionDate,
+                sessionType,
+                status,
+                strengths,
+                concerns,
+                actionPlan,
+                followUpDate
+            };
+            createReportCard(entry);
+
             menteeForm.reset();
             showToast();
             showSection("records");
@@ -1551,6 +1774,69 @@
         resetFormBtn.addEventListener("click", () => {
             menteeForm.reset();
         });
+
+        function createReportCard(entry) {
+            const card = document.createElement("div");
+            card.className = "report-card card-3d";
+            card.setAttribute("data-tilt-card", "");
+
+            card.innerHTML = `
+                <div class="report-card-header">
+                    <div>
+                        <div class="report-name">${entry.menteeName}</div>
+                        <div class="report-id">Mentee ID / Roll No.: ${entry.menteeId || "-"}</div>
+                    </div>
+                    <span class="status-pill ${entry.status === "Needs Attention" || entry.status === "Critical" ? "pending" : ""}">
+                        <span class="status-dot"></span> ${entry.status}
+                    </span>
+                </div>
+
+                <div class="report-meta-grid">
+                    <div class="report-field">
+                        <span class="report-field-label">Program / Department</span>
+                        <span>${entry.program || "-"}</span>
+                    </div>
+                    <div class="report-field">
+                        <span class="report-field-label">Semester</span>
+                        <span>${entry.semester || "-"}</span>
+                    </div>
+                    <div class="report-field">
+                        <span class="report-field-label">Mentor Name</span>
+                        <span>${entry.mentorName || "-"}</span>
+                    </div>
+                    <div class="report-field">
+                        <span class="report-field-label">Session Date</span>
+                        <span>${entry.sessionDate || "-"}</span>
+                    </div>
+                    <div class="report-field">
+                        <span class="report-field-label">Session Type</span>
+                        <span>${entry.sessionType || "-"}</span>
+                    </div>
+                    <div class="report-field">
+                        <span class="report-field-label">Next Follow-Up Date</span>
+                        <span>${entry.followUpDate || "-"}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="report-section-title">Strengths / Positive Observations</div>
+                    <div class="report-text">${entry.strengths || "Not recorded."}</div>
+                </div>
+
+                <div>
+                    <div class="report-section-title">Concerns / Areas to Improve</div>
+                    <div class="report-text">${entry.concerns || "Not recorded."}</div>
+                </div>
+
+                <div>
+                    <div class="report-section-title">Action Plan / Mentor Suggestions</div>
+                    <div class="report-text">${entry.actionPlan || "Not recorded."}</div>
+                </div>
+            `;
+
+            reportContainer.prepend(card);
+            attachTilt(card);
+        }
 
         // Simple search filter
         const searchText = document.getElementById("searchText");
@@ -1573,10 +1859,8 @@
         searchText.addEventListener("input", filterTable);
         filterStatus.addEventListener("change", filterTable);
 
-        // Dora-style subtle 3D tilt on cards (no heavy library)
-        const tiltCards = document.querySelectorAll("[data-tilt-card]");
-
-        tiltCards.forEach(card => {
+        // 3D tilt helper
+        function attachTilt(card) {
             card.addEventListener("mousemove", (e) => {
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -1584,7 +1868,7 @@
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
 
-                const rotateX = ((y - centerY) / centerY) * 4; // max 4deg
+                const rotateX = ((y - centerY) / centerY) * 4;
                 const rotateY = ((x - centerX) / centerX) * -4;
 
                 card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(0)`;
@@ -1593,7 +1877,10 @@
             card.addEventListener("mouseleave", () => {
                 card.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0)";
             });
-        });
+        }
+
+        // Initialize tilt for all existing cards
+        document.querySelectorAll("[data-tilt-card]").forEach(attachTilt);
     </script>
 </body>
 </html>
